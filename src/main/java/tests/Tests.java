@@ -5,8 +5,8 @@ import iputils.Subnet;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFChart;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xssf.usermodel.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,8 +32,8 @@ public class Tests {
         toExcel();
     }
 
-    private static Map<Integer, Long> perfTest(Subnet s, Set<IPAddress> sIP) {
-        long start = System.currentTimeMillis();
+    private static long perfTest(Subnet s, Set<IPAddress> sIP) {
+        long start = System.nanoTime();
         int cidr = Integer.toBinaryString(s.getMask().getIP()).replaceAll("0", "").length();
         for (int i = 0; i < Math.pow(2, 32 - cidr); i++) {
             sIP.add(new IPAddress(s.getNet().getIP() + i));
@@ -41,24 +41,14 @@ public class Tests {
         for (int i = 0; i < Math.pow(2, 32 - cidr) * 2; i++) {
             sIP.contains(new IPAddress(s.getNet().getIP() + i));
         }
-        HashMap<Integer, Long> h = new HashMap<>();
-        h.put(cidr, System.currentTimeMillis() - start);
-        return h;
+
+        return System.nanoTime() - start;
     }
 
     public static void toExcel() {
-        HashMap<Integer, Long> all = new HashMap<>();
-        for (int i = 0; i < 32; i++) {
-            Subnet s = new Subnet("0.0.0.0/" + i);
-            all.putAll(perfTest(s, new HashSet<>()));
-        }
-
         try {
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Chart sheet");
-
-            // TODO: excel dingsen und javaheapspace entficken
-
 
             // Create a row and put some cells in it. Rows are 0 based.
             Row row = sheet.createRow(0);
@@ -68,15 +58,35 @@ public class Tests {
             cell.setCellValue("Duration");
 
             int rownum = 1;
-            for (Map.Entry<Integer, Long> entry : all.entrySet()) {
+            for (int i = 8; i < 32; i++) {
+                Subnet s = new Subnet("0.0.0.0/" + i);
+                long dur = perfTest(s, new HashSet<>());
                 row = sheet.createRow(rownum++);
                 cell = row.createCell(0);
-                cell.setCellValue(entry.getKey());
+                cell.setCellValue(i);
                 cell = row.createCell(1);
-                cell.setCellValue((double) entry.getValue()/100);
+                cell.setCellValue((double) dur/1000);
             }
 
-            Drawing<?> drawing = sheet.createDrawingPatriarch();
+            XSSFDrawing drawing = (XSSFDrawing) sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 15);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            XDDFChartLegend legend =chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            chart.setTitleText("Duration of contains()");
+            chart.setTitleOverlay(false);
+            bottomAxis.setTitle("SNM");
+            leftAxis.setTitle("Duration");
+            XDDFDataSource<String> xs = XDDFDataSourcesFactory.fromStringCellRange((XSSFSheet) sheet, new CellRangeAddress(1, 24, 0, 0));
+            data.addSeries(xs, XDDFDataSourcesFactory.fromNumericCellRange((XSSFSheet) sheet, new CellRangeAddress(1, 24, 1, 1)));
+            chart.plot(data);
+
+
             try (OutputStream fileOut = new FileOutputStream("workbook.xlsx")) {
                 workbook.write(fileOut);
             }
@@ -84,7 +94,6 @@ public class Tests {
             workbook.close();
 
         }catch (IOException e){e.printStackTrace();}
-
     }
 }
 

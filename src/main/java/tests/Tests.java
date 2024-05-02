@@ -2,8 +2,10 @@ package tests;
 
 import iputils.IPAddress;
 import iputils.Subnet;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
@@ -11,8 +13,9 @@ import org.apache.poi.xssf.usermodel.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class Tests {
     private static void testSet(Set<IPAddress> sIP) {
@@ -65,14 +68,14 @@ public class Tests {
                 cell = row.createCell(0);
                 cell.setCellValue(i);
                 cell = row.createCell(1);
-                cell.setCellValue((double) dur/1000);
+                cell.setCellValue((double) dur / 1000);
             }
 
             XSSFDrawing drawing = (XSSFDrawing) sheet.createDrawingPatriarch();
-            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 15);
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 5, 15, 20);
 
             XSSFChart chart = drawing.createChart(anchor);
-            XDDFChartLegend legend =chart.getOrAddLegend();
+            XDDFChartLegend legend = chart.getOrAddLegend();
             legend.setPosition(LegendPosition.BOTTOM);
 
             XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
@@ -93,7 +96,9 @@ public class Tests {
 
             workbook.close();
 
-        }catch (IOException e){e.printStackTrace();}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

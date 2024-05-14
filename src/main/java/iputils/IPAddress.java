@@ -12,10 +12,10 @@ public class IPAddress implements Comparable<IPAddress> {
     /**
      * create IP from 4 Numbers
      *
-     * @param a3
-     * @param a2
-     * @param a1
-     * @param a0
+     * @param a3 octet 3
+     * @param a2 octet 2
+     * @param a1 octet 1
+     * @param a0 octet 0
      */
     public IPAddress(int a3, int a2, int a1, int a0) {
         createIP(a3, a2, a1, a0);
@@ -24,7 +24,7 @@ public class IPAddress implements Comparable<IPAddress> {
     /**
      * create IP from given integer (internal use)
      *
-     * @param ip
+     * @param ip ip as integer
      */
     public IPAddress(int ip) {
         this.ip = ip;
@@ -42,7 +42,7 @@ public class IPAddress implements Comparable<IPAddress> {
      * create IP/Netmask with given number of bits
      *
      * @param cidr number of bits
-     * @return
+     * @return netmask
      */
     public static IPAddress createNetmask(int cidr) {
         int mask = (int) (0xffffffff00000000L >> cidr);

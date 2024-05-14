@@ -24,11 +24,11 @@ public class Subnet {
     /**
      * create netmask from ip (four number) and number of bits
      *
-     * @param a3
-     * @param a2
-     * @param a1
-     * @param a0
-     * @param cidr
+     * @param a3 octet 3
+     * @param a2 octet 2
+     * @param a1 octet 1
+     * @param a0 octet 0
+     * @param cidr snm in cidr notation
      */
     public Subnet(int a3, int a2, int a1, int a0, int cidr) {
         this(new IPAddress(a3, a2, a1, a0), cidr);
@@ -47,9 +47,6 @@ public class Subnet {
     private void createMask(IPAddress net, int cidr) {
         this.net = net;
         this.mask = IPAddress.createNetmask(cidr);
-        // System.out.format("n %08x\n", this.net.getIP() & 0xffffffffl);
-        // System.out.format("m %08x\n", this.mask.getIP());
-        // System.out.format(" %08x\n", (this.net.getIP() & mask.getIP()));
 
         if ((this.net.getIP() & mask.getIP()) != this.net.getIP()) {
             throw new IllegalArgumentException("bad network");
@@ -71,14 +68,10 @@ public class Subnet {
     /**
      * is IP in this network
      *
-     * @param ip
-     * @return
+     * @param ip ip address
+     * @return true if ip is in this network
      */
     public boolean contains(IPAddress ip) {
-        // System.out.format("i %08x\n", ip.getIP());
-        // System.out.format("m %08x\n", mask.getIP());
-        // System.out.format("i&m %08x\n", ip.getIP() & mask.getIP());
-        // System.out.format("n %08x\n", net.getIP());
 
         return (ip.getIP() & mask.getIP()) == net.getIP();
     }
